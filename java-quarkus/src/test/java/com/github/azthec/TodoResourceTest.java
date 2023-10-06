@@ -19,6 +19,7 @@ public class TodoResourceTest {
     @BeforeEach
     void setUp() {
         RestAssured.baseURI = apiRoot + "todo";
+        given().when().delete().then().statusCode(204);
     }
 
     @Test
@@ -34,7 +35,7 @@ public class TodoResourceTest {
             .body("{\"title\":\"a todo\"}")
             .header("Content-Type", MediaType.APPLICATION_JSON)
             .when().post()
-            .then().statusCode(200).body("title", equalTo("a todo"));
+            .then().statusCode(201).body("title", equalTo("a todo"));
     }
 
     @Test
@@ -48,19 +49,20 @@ public class TodoResourceTest {
     void testApiRootAfterDelete() {
         given()
             .when().delete()
-            .then().statusCode(200).body(isEmptyOrNullString());
+            .then().statusCode(204);
+
+        given()
+            .when().get()
+            .then().statusCode(200).body(equalTo("[]"));
     }
 
     @Test
     void testAddingNewTodoToRootUrl() {
         given()
-            .when().delete().then().statusCode(204); // Ensure root is empty before adding a new todo
-
-        given()
             .body("{\"title\":\"walk the dog\"}")
             .header("Content-Type", MediaType.APPLICATION_JSON)
             .when().post()
-            .then().statusCode(200);
+            .then().statusCode(201);
 
         given()
             .when().get()
@@ -71,26 +73,20 @@ public class TodoResourceTest {
     @Test
     void testSetupNewTodoAsNotCompleted() {
         given()
-            .when().delete().then().statusCode(204); // Ensure root is empty before adding a new todo
-
-        given()
             .body("{\"title\":\"blah\"}")
             .header("Content-Type", MediaType.APPLICATION_JSON)
             .when().post()
-            .then().statusCode(200)
+            .then().statusCode(201)
             .body("completed", equalTo(false));
     }
 
     @Test
     void testEachNewTodoHasUrl() {
         given()
-            .when().delete().then().statusCode(204); // Ensure root is empty before adding a new todo
-
-        given()
             .body("{\"title\":\"blah\"}")
             .header("Content-Type", MediaType.APPLICATION_JSON)
             .when().post()
-            .then().statusCode(200)
+            .then().statusCode(201)
             .body("url", notNullValue());
     }
 
@@ -100,7 +96,7 @@ public class TodoResourceTest {
             .body("{\"title\":\"my todo\"}")
             .header("Content-Type", MediaType.APPLICATION_JSON)
             .when().post()
-            .then().statusCode(200)
+            .then().statusCode(201)
             .body("url", notNullValue())
             .body("title", equalTo("my todo"));
 
@@ -110,22 +106,20 @@ public class TodoResourceTest {
             .then().statusCode(200).body("size()", equalTo(1))
             .body("[0].title", equalTo("my todo"));
     }
+
     @Test
     void testWorkingWithExistingTodo() {
-        // Clear existing todos before each test
-        given().when().delete().then().statusCode(204);
-
         // Test navigating from a list of todos to an individual todo via URLs
         given()
                 .body("{\"title\":\"todo the first\"}")
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when().post()
-                .then().statusCode(200);
+                .then().statusCode(201);
         given()
                 .body("{\"title\":\"todo the second\"}")
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when().post()
-                .then().statusCode(200);
+                .then().statusCode(201);
 
         given()
                 .when().get()
@@ -141,7 +135,7 @@ public class TodoResourceTest {
                 .body("{\"title\":\"initial title\"}")
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when().post()
-                .then().statusCode(200);
+                .then().statusCode(201);
 
         String urlForNewTodo = given()
                 .when().get().jsonPath().getString("[0].url");
@@ -158,7 +152,7 @@ public class TodoResourceTest {
                 .body("{\"title\":\"test todo\"}")
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when().post()
-                .then().statusCode(200);
+                .then().statusCode(201);
 
         String urlForTodoToComplete = given()
                 .when().get().jsonPath().getString("[0].url");
@@ -175,7 +169,7 @@ public class TodoResourceTest {
                 .body("{\"title\":\"changed title\"}")
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when().post()
-                .then().statusCode(200);
+                .then().statusCode(201);
 
         String urlForChangedTodo = given()
                 .when().get().jsonPath().getString("[0].url");
@@ -197,7 +191,7 @@ public class TodoResourceTest {
                 .body("{\"title\":\"delete me\"}")
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when().post()
-                .then().statusCode(200);
+                .then().statusCode(201);
 
         String urlForTodoToDelete = given()
                 .when().get().jsonPath().getString("[0].url");
@@ -209,7 +203,7 @@ public class TodoResourceTest {
         given()
                 .when().get()
                 .then().statusCode(200)
-                .body("size()", equalTo(0));
+                .body("size()", equalTo(5));
     }
 
     @Test
@@ -219,7 +213,7 @@ public class TodoResourceTest {
                 .body("{\"title\":\"blah\",\"order\":523}")
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when().post()
-                .then().statusCode(200)
+                .then().statusCode(201)
                 .body("order", equalTo(523));
 
         // Test PATCHing a todo to change its order
@@ -227,7 +221,7 @@ public class TodoResourceTest {
                 .body("{\"title\":\"initial title\",\"order\":10}")
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when().post()
-                .then().statusCode(200);
+                .then().statusCode(201);
 
         String newTodoUrl = given()
                 .when().get().jsonPath().getString("[0].url");
@@ -244,7 +238,7 @@ public class TodoResourceTest {
                 .body("{\"title\":\"order test\",\"order\":10}")
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when().post()
-                .then().statusCode(200);
+                .then().statusCode(201);
 
         String newTodoUrlForOrderTest = given()
                 .when().get().jsonPath().getString("[0].url");
@@ -260,6 +254,5 @@ public class TodoResourceTest {
                 .then().statusCode(200)
                 .body("order", equalTo(95));
     }
-
 }
 
