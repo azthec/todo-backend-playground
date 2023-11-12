@@ -9,6 +9,6 @@ implementing a todo application based on the spec defined at at [https://www.tod
  - These implementations will be deployed and available (Heroku, Render, etc)
 
 ## Implementations
-  - [JVM language + Quarkus](./java-quarkus/README.md)
- - Rust
+  - [Java + Quarkus](./java-quarkus/README.md)
+  - [Rust + Rocket](./rust-rocket/README.md)
 
