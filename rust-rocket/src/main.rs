@@ -4,7 +4,10 @@ extern crate rocket;
 use rocket::{serde::json::Json, State};
 
 use std::{io::ErrorKind, sync::Arc};
-use surrealdb::{sql::Object, Datastore, Session};
+use surrealdb::sql::Object;
+use surrealdb::{kvs::Datastore, dbs::Session};
+
+use surrealdb::iam::{Level, Role};
 
 use crate::db::{AffectedRows, DB};
 
@@ -69,8 +72,8 @@ async fn delete_task(id: String, db: &State<DB>) -> Result<Json<AffectedRows>, s
 #[launch]
 async fn rocket() -> _ {
     let ds = Arc::new(Datastore::new("memory").await.unwrap());
-    let sesh = Session::for_db("my_ns", "my_db");
 
+    let sesh = Session::for_level(Level::Database("my_ns".to_string(), "my_db".to_string()), Role::Owner);
     let db = DB { ds, sesh };
 
     rocket::build()

@@ -4,10 +4,9 @@ use crate::{prelude::W, utils::macros::map};
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use surrealdb::{
-    sql::{thing, Array, Object, Value},
-    Datastore, Response, Session,
-};
+use surrealdb::sql::{thing, Array, Object, Value};
+use surrealdb::kvs::Datastore;
+use surrealdb::dbs::{Session, Response};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Task {
@@ -63,7 +62,7 @@ impl DB {
         query: &str,
         vars: Option<BTreeMap<String, Value>>,
     ) -> Result<Vec<Response>, crate::error::Error> {
-        let res = self.ds.execute(query, &self.sesh, vars, false).await?;
+        let res = self.ds.execute(query, &self.sesh, vars).await?;
         Ok(res)
     }
 
